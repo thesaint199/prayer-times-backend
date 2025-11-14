@@ -1,4 +1,3 @@
-// import { APIGatewayProxyHandler } from 'aws-lambda';
 import { PrayerTimes, CalculationMethod, Coordinates } from 'adhan';
 
 // Shared city list – you can add more
@@ -12,17 +11,25 @@ const CITY_MAP: Record<string, { lat: number; lon: number; timezone: string }> =
 
 export const handler = async (event: any) => {
   try {
-    const qs = event.queryStringParameters || {};
+    const qs = event?.queryStringParameters || {};
     const env = (qs.env || 'PROD').toUpperCase();  // TEST or PROD
-    const city = qs.city || 'New York';
+
+    // city from query, default "New York", trim spaces
+    const cityParam: string = (qs.city || 'New York').toString().trim();
     const dateStr = qs.date;
 
-    const cityInfo = CITY_MAP[city];
+    // Find matching city ignoring case
+    const cityKey = Object.keys(CITY_MAP).find(
+      (name) => name.toLowerCase() === cityParam.toLowerCase()
+    );
+
+    const cityInfo = cityKey ? CITY_MAP[cityKey] : undefined;
+
     if (!cityInfo) {
       return {
         statusCode: 404,
         headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: `City ${city} not found`, env }),
+        body: JSON.stringify({ error: `City ${cityParam} not found`, env }),
       };
     }
 
@@ -41,7 +48,12 @@ export const handler = async (event: any) => {
     const toIso = (d: Date) => d.toISOString();
 
     if (env === 'TEST') {
-      console.log('[TEST] request', { city, date: date.toISOString(), timezone });
+      console.log('[TEST] request', {
+        cityRequested: cityParam,
+        cityMatched: cityKey,
+        date: date.toISOString(),
+        timezone,
+      });
     }
 
     return {
