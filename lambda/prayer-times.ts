@@ -1,4 +1,4 @@
-import { APIGatewayProxyHandler } from 'aws-lambda';
+// import { APIGatewayProxyHandler } from 'aws-lambda';
 import { PrayerTimes, CalculationMethod, Coordinates } from 'adhan';
 
 // Shared city list – you can add more
@@ -10,7 +10,7 @@ const CITY_MAP: Record<string, { lat: number; lon: number; timezone: string }> =
   Riyadh:    { lat: 24.7136,  lon: 46.6753,    timezone: 'Asia/Riyadh' },
 };
 
-export const handler: APIGatewayProxyHandler = async (event) => {
+export const handler = async (event: any) => {
   try {
     const qs = event.queryStringParameters || {};
     const env = (qs.env || 'PROD').toUpperCase();  // TEST or PROD
